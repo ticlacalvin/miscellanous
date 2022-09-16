@@ -1,0 +1,31 @@
+﻿var AWS = require('aws-sdk');
+var ses = new AWS.SES({apiVersion: '2010-12-01'});
+
+exports.handler = (event, context, callback) => {
+  event.Records.forEach((record) => {
+    var params = {
+      Source: process.env.EMAIL_ADDRESS,
+      Destination: {
+        ToAddresses: [record.dynamodb.NewImage.Email.S]
+      },
+      Message: {
+        Body: {
+          Html: {
+            Data: '<html><h1>Thank you!</h1><p>Wild Rydes is coming soon! Stay tuned for more info about unicorns near you!</p></html>'
+          },
+          Text: {
+            Data: 'Wild Rydes is coming soon! Stay tuned for more info about unicorns near you!'
+          }
+        },
+        Subject: {
+          Data: 'Wild Rydes Limited Private Beta Confirmation'
+        }
+      }
+    };
+
+    ses.sendEmail(params, (err, data) => {
+      if (err) context.fail(err);
+      else     context.succeed(null);
+    });
+  });
+};
